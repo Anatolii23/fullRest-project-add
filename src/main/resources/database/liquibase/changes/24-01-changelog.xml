@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1637777074206-3" author="Windows (generated)">
+        <createTable tableName="customer_order">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_customer_order"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(255)"/>
+            <column name="date" type="DATETIME"/>
+            <column name="price" type="DOUBLE"/>
+            <column name="employee_id" type="BIGINT"/>
+            <column name="customer_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1637777074206-4" author="Windows (generated)">
+        <createTable tableName="customer_order_product">
+            <column name="order_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1637777074206-5" author="Windows (generated)">
+        <createTable tableName="customers">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_customers"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="address" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1637777074206-6" author="Windows (generated)">
+        <createTable tableName="employees">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_employees"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="role" type="VARCHAR(255)"/>
+            <column name="salary" type="DOUBLE"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1637777074206-7" author="Windows (generated)">
+        <createTable tableName="products">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_products"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="price" type="DOUBLE"/>
+            <column name="quantity" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1637777074206-8" author="Windows (generated)">
+        <addUniqueConstraint columnNames="product_id" constraintName="uc_customer_order_product_product"
+                             tableName="customer_order_product"/>
+    </changeSet>
+    <changeSet id="1637777074206-9" author="Windows (generated)">
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="customer_order"
+                                 constraintName="FK_CUSTOMER_ORDER_ON_CUSTOMER" referencedColumnNames="id"
+                                 referencedTableName="customers"/>
+    </changeSet>
+    <changeSet id="1637777074206-10" author="Windows (generated)">
+        <addForeignKeyConstraint baseColumnNames="employee_id" baseTableName="customer_order"
+                                 constraintName="FK_CUSTOMER_ORDER_ON_EMPLOYEE" referencedColumnNames="id"
+                                 referencedTableName="employees"/>
+    </changeSet>
+    <changeSet id="1637777074206-11" author="Windows (generated)">
+        <addForeignKeyConstraint baseColumnNames="order_id" baseTableName="customer_order_product"
+                                 constraintName="fk_cusordpro_on_order" referencedColumnNames="id"
+                                 referencedTableName="customer_order"/>
+    </changeSet>
+    <changeSet id="1637777074206-12" author="Windows (generated)">
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="customer_order_product"
+                                 constraintName="fk_cusordpro_on_ordered_product" referencedColumnNames="id"
+                                 referencedTableName="ordered_products"/>
+    </changeSet>
+    <changeSet id="1637777074206-1" author="Windows (generated)">
+        <dropNotNullConstraint columnDataType="double" columnName="price" tableName="ordered_products"/>
+    </changeSet>
+    <changeSet id="1637777074206-2" author="Windows (generated)">
+        <dropNotNullConstraint columnDataType="int" columnName="quantity" tableName="ordered_products"/>
+    </changeSet>
+
+</databaseChangeLog>
