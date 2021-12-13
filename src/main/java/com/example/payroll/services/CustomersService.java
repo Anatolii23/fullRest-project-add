@@ -2,6 +2,7 @@ package com.example.payroll.services;
 
 import com.example.payroll.entity.Customer;
 import com.example.payroll.errors.CustomerNotFoundException;
+import com.example.payroll.repository.CustomerCache;
 import com.example.payroll.repository.CustomerRepository;
 import com.example.payroll.rest.dto.CustomerDto;
 import com.example.payroll.until.CustomerModelAssembler;
@@ -19,13 +20,14 @@ import java.util.stream.Collectors;
 public class CustomersService {
     private final CustomerRepository customerRepository;
     private final CustomerModelAssembler customerModelAssembler;
+    private final CustomerCache customerCache;
 
     public EntityModel<CustomerDto> updateCustomerAndGetModel(CustomerDto newCustomer, Long id) {
         newCustomer.setId(id);
         customerRepository.findById(id)
                 .map(customer -> {
                     BeanUtils.copyProperties(newCustomer, customer);
-//                    customerCache.saveCustomerInCache(newCustomer);
+                    customerCache.saveCustomerInCache(newCustomer);
                     return customerRepository.save(customer);
                 })
                 .orElseThrow(() -> new CustomerNotFoundException(id));
@@ -41,12 +43,12 @@ public class CustomersService {
     }
 
     public EntityModel<CustomerDto> getCustomerDto(Long id) {
-//        CustomerDto customerDto = customerCache.getCustomer(id).orElseGet(() -> (customerRepository.findById(id)
-//             .map(EntityDtoMapper::mappedToCustomerDto)
-//                .orElseThrow(() -> new CustomerNotFoundException(id))));
-        CustomerDto customerDto = customerRepository.findById(id)
+        CustomerDto customerDto = customerCache.getCustomer(id).orElseGet(() -> (customerRepository.findById(id)
                 .map(EntityDtoMapper::mappedToCustomerDto)
-                .orElseThrow(() -> new CustomerNotFoundException(id));
+                .orElseThrow(() -> new CustomerNotFoundException(id))));
+//        CustomerDto customerDto = customerRepository.findById(id)
+//                .map(EntityDtoMapper::mappedToCustomerDto)
+//                .orElseThrow(() -> new CustomerNotFoundException(id));
         return customerModelAssembler.toModel(customerDto);
     }
 
@@ -54,14 +56,15 @@ public class CustomersService {
         Customer customer = EntityDtoMapper.mappedToCustomerEntity(newCustomer);
         customerRepository.save(customer);
         CustomerDto customerDto = EntityDtoMapper.mappedToCustomerDto(customer);
-//        customerCache.saveCustomerInCache(customerDto);
+        customerCache.saveCustomerInCache(customerDto);
         return customerModelAssembler.toModel(customerDto);
     }
 
     public void deleteCustomerById(Long id) {
         customerRepository.findById(id).orElseThrow(() -> new CustomerNotFoundException(id));
+        customerCache.deleteCustomerFromCache(id);
         customerRepository.deleteById(id);
-//        customerCache.deleteCustomerFromCache(id);
+
     }
 
     public List<EntityModel<CustomerDto>> getAllEntityModelCustomersByFilter(String name) {

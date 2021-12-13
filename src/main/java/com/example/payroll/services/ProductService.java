@@ -2,6 +2,7 @@ package com.example.payroll.services;
 
 import com.example.payroll.entity.Product;
 import com.example.payroll.errors.ProductNotFoundException;
+import com.example.payroll.repository.ProductCache;
 import com.example.payroll.repository.ProductRepository;
 import com.example.payroll.rest.dto.ProductDto;
 import com.example.payroll.until.EntityDtoMapper;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductModelAssembler productModelAssembler;
+    private final ProductCache productCache;
 
     public List<EntityModel<ProductDto>> getAllProductsModel() {
         return productRepository.findAll().stream()
@@ -26,18 +28,18 @@ public class ProductService {
                 .map(productModelAssembler::toModel)
                 .collect(Collectors.toList());
     }
-//productCache.getProduct(id).orElseGet(() ->
+
     public EntityModel<ProductDto> getProductDto(Long id) {
-        ProductDto productDto = productRepository.findById(id)
+        ProductDto productDto = productCache.getProduct(id).orElseGet(() -> productRepository.findById(id)
                 .map(EntityDtoMapper::mappedToProductDto)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+                .orElseThrow(() -> new ProductNotFoundException(id)));
         return productModelAssembler.toModel(productDto);
     }
 
     public EntityModel<ProductDto> createProductDtoEntityModel(ProductDto newProduct) {
         if (productRepository.findByName(newProduct.getName()).isEmpty()) {
             Product product = EntityDtoMapper.mappedToProductEntity(newProduct);
-          //  productCache.saveProductInCache(newProduct);
+            productCache.saveProductInCache(newProduct);
             productRepository.save(product);
             ProductDto productDto = EntityDtoMapper.mappedToProductDto(product);
             return productModelAssembler.toModel(productDto);
@@ -46,14 +48,14 @@ public class ProductService {
             product.setLevelStack(product.getLevelStack() + newProduct.getLevelStack());
             productRepository.save(product);
             ProductDto productDto = EntityDtoMapper.mappedToProductDto(product);
-           // productCache.saveProductInCache(productDto);
+            productCache.saveProductInCache(productDto);
             return productModelAssembler.toModel(productDto);
         }
     }
 
     public void deleteCustomerById(Long id) {
         productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
-        //productCache.deleteProductFromCache(id);
+        productCache.deleteProductFromCache(id);
         productRepository.deleteById(id);
     }
 
@@ -71,13 +73,14 @@ public class ProductService {
                                 product.setPrice(newProduct.getPrice());
                             }
                             BeanUtils.copyProperties(product, newProduct);
-                           // productCache.saveProductInCache(newProduct);
+                            productCache.saveProductInCache(newProduct);
                             return productRepository.save(product);
                         }
                 )
                 .orElseThrow(() -> new ProductNotFoundException(id));
         return productModelAssembler.toModel(newProduct);
     }
+
     public List<EntityModel<ProductDto>> getAllProductsModelByFilter(String name, Double minPrice, Double maxPrice, Integer minStack, Integer maxStack) {
         List<Product> byNameList;
         if (name != null) {
